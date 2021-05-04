@@ -44,3 +44,24 @@ func FetchIndex() []Zip {
 	}
 	return scanArgs
 }
+
+func FetchByKey(zipcode string) []Zip {
+	db := db.Connect()
+	defer db.Close()
+
+	rows, err := db.Query("SELECT * FROM test1 where zipcode = ?", zipcode)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	scanArgs := make([]Zip, 0)
+	for rows.Next() {
+		var value Zip
+		err = rows.Scan(&value.LocalCode, &value.OldZipcode, &value.Zipcode, &value.PrefKana, &value.CityKana, &value.TownKana, &value.Prefectures, &value.City, &value.Town, &value.MultipleZipcode, &value.Koaza, &value.Tyome, &value.MultipleTown, &value.UpdateFlag, &value.UpdateWhy, &value.Id)
+		if err != nil {
+			panic(err.Error())
+		}
+		scanArgs = append(scanArgs, value)
+	}
+	return scanArgs
+}
