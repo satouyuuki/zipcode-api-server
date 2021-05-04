@@ -1,11 +1,11 @@
 package db
 
 import (
-    "database/sql"
-    "os"
+	"database/sql"
+	"os"
 
-    _ "github.com/go-sql-driver/mysql"
-    "github.com/joho/godotenv"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 )
 func Connect() *sql.DB {
 	err := godotenv.Load()

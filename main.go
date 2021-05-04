@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/satouyuuki/zipcode-api-server/pkg/api"
+	"server2/pkg/api"
 )
 
 func main() {
