@@ -9,8 +9,9 @@ import (
 
 func main() {
 	r := mux.NewRouter()
-	r.HandleFunc("/api/", show)
+	r.HandleFunc("/api", show)
 	r.HandleFunc("/api/{zipcode:[0-9]+}", findAddress)
+	r.HandleFunc("/api/search", search).Queries("q", "{query}")
 	// api.FetchIndex()
 	panic(http.ListenAndServe(":8080", r))
 }
@@ -33,6 +34,18 @@ func findAddress(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["zipcode"]
 	data := api.FetchByKey(id)
+	if len(data) == 0 {
+		errorHandler(w, r, http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(jsonEncode(data)))
+}
+
+func search(w http.ResponseWriter, r *http.Request) {
+	query := r.FormValue("q")
+	// query := r.URL.Query()
+	data := api.Search(query)
 	if len(data) == 0 {
 		errorHandler(w, r, http.StatusNotFound)
 		return

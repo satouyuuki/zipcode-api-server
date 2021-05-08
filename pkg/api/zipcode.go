@@ -1,14 +1,11 @@
 package api
 
 import (
-	// "fmt"
+	"fmt"
 	"server2/pkg/db"
 )
 
 type Zip struct {
-	Id int `json:"id"`
-	LocalCode int `json:"local_code"`
-	OldZipcode int `json:"old_zipcode"`
 	Zipcode int `json:"zipcode"`
 	PrefKana string `json:"pref_kana"`
 	CityKana string `json:"city_kana"`
@@ -16,19 +13,13 @@ type Zip struct {
 	Prefectures string `json:"prefectures"`
 	City string `json:"city"`
 	Town string `json:"town"`
-	MultipleZipcode int `json:"multiple_zipcode"`
-	Koaza int `json:"koaza"`
-	Tyome int `json:"tyome"`
-	MultipleTown int `json:"multiple_town"`
-	UpdateFlag int `json:"update_flag"`
-	UpdateWhy int `json:"update_why"`
 }
 
 func FetchIndex() []Zip {
 	db := db.Connect()
 	defer db.Close()
 
-	rows, err := db.Query("SELECT * FROM test1 limit 3")
+	rows, err := db.Query("SELECT zipcode, pref_kana, city_kana, town_kana, prefectures, city, town FROM test1 limit 3")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -36,7 +27,7 @@ func FetchIndex() []Zip {
 	scanArgs := make([]Zip, 0)
 	for rows.Next() {
 		var value Zip
-		err = rows.Scan(&value.LocalCode, &value.OldZipcode, &value.Zipcode, &value.PrefKana, &value.CityKana, &value.TownKana, &value.Prefectures, &value.City, &value.Town, &value.MultipleZipcode, &value.Koaza, &value.Tyome, &value.MultipleTown, &value.UpdateFlag, &value.UpdateWhy, &value.Id)
+		err = rows.Scan(&value.Zipcode, &value.PrefKana, &value.CityKana, &value.TownKana, &value.Prefectures, &value.City, &value.Town)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -45,11 +36,11 @@ func FetchIndex() []Zip {
 	return scanArgs
 }
 
+// 郵便番号リソース /{zipcode}
 func FetchByKey(zipcode string) []Zip {
 	db := db.Connect()
 	defer db.Close()
-
-	rows, err := db.Query("SELECT * FROM test1 where zipcode = ?", zipcode)
+	rows, err := db.Query("SELECT zipcode, pref_kana, city_kana, town_kana, prefectures, city, town FROM test1 where zipcode = ?", zipcode)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -57,11 +48,37 @@ func FetchByKey(zipcode string) []Zip {
 	scanArgs := make([]Zip, 0)
 	for rows.Next() {
 		var value Zip
-		err = rows.Scan(&value.LocalCode, &value.OldZipcode, &value.Zipcode, &value.PrefKana, &value.CityKana, &value.TownKana, &value.Prefectures, &value.City, &value.Town, &value.MultipleZipcode, &value.Koaza, &value.Tyome, &value.MultipleTown, &value.UpdateFlag, &value.UpdateWhy, &value.Id)
+		err = rows.Scan(&value.Zipcode, &value.PrefKana, &value.CityKana, &value.TownKana, &value.Prefectures, &value.City, &value.Town)
 		if err != nil {
 			panic(err.Error())
 		}
 		scanArgs = append(scanArgs, value)
+	}
+	return scanArgs
+}
+
+// 検索結果リソース /search/?q={query}
+func Search(query string) []Zip {
+	db := db.Connect()
+	defer db.Close()
+	// queryParam := query + '%'
+	
+	rows, err := db.Query("SELECT zipcode, pref_kana, city_kana, town_kana, prefectures, city, town FROM test1 where zipcode like ?", "'" + query + "%'")
+	if err != nil {
+		fmt.Println(err.Error())
+		panic(err.Error())
+	}
+	// fmt.Println(rows)
+
+	scanArgs := make([]Zip, 0)
+	for rows.Next() {
+		var value Zip
+		err = rows.Scan(&value.Zipcode, &value.PrefKana, &value.CityKana, &value.TownKana, &value.Prefectures, &value.City, &value.Town)
+		if err != nil {
+			panic(err.Error())
+		}
+		scanArgs = append(scanArgs, value)
+		fmt.Println(scanArgs)
 	}
 	return scanArgs
 }
